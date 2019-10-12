@@ -1,76 +1,50 @@
-# devtools::install_github('cran/BayesLogit')
-library(BayesLogit)
-library(debiasedmcmc)
 library(latex2exp)
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(cowplot)
-library(ggthemes)
-library(ggridges)
-library(reshape2)
-library(tictoc)
+library(tidyverse)
 
-library(dplyr)
-# setmytheme()
-rm(list = ls())
-set.seed(21)
-library(doParallel)
-library(doRNG)
-registerDoParallel(cores = detectCores()-2)
-
-# Loading coupling times
 source("tv_wasserstein_bounds.R")
 
-
-# HMC small data times
-hmc_meetings_lag_1000_hmc_stepsize_0.025_nsteps4 <- read.csv(file="hmc_meetings_lag_1000_stepsize_0.025_nsteps4.csv", header=TRUE, sep=",")
-hmc_meetings_lag_1000_hmc_stepsize_0.025_nsteps5 <- read.csv(file="hmc_meetings_lag_1000_stepsize_0.025_nsteps5.csv", header=TRUE, sep=",")
-hmc_meetings_lag_500_hmc_stepsize_0.025_nsteps6 <- read.csv(file="hmc_meetings_lag_500_stepsize_0.025_nsteps6.csv", header=TRUE, sep=",")
-hmc_meetings_lag_2000_hmc_stepsize_0.025_nsteps7 <- read.csv(file="hmc_meetings_lag_2000_stepsize_0.025_nsteps7.csv", header=TRUE, sep=",")
-# PG small data times
-PG_meetings_lag_350 <- read.csv(file="PG_meetings_lag_350.csv", header=TRUE, sep=",")
+hmc_experiments_df <- data.frame(
+  stepsize = c(0.025, 0.025, 0.025, 0.025),
+  nsteps = c(4, 5, 6, 7),
+  lag = c(1000, 1000, 500, 2000)
+)
 
 t_start <- 0
 t_end <- 2000
-tv_ub_values_lag_1000_hmc_stepsize_0.025_nsteps4 <- sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(hmc_meetings_lag_1000_hmc_stepsize_0.025_nsteps4$x, L=1000, t))
-tv_ub_values_lag_1000_hmc_stepsize_0.025_nsteps5 <- sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(hmc_meetings_lag_1000_hmc_stepsize_0.025_nsteps5$x, L=1000, t))
-tv_ub_values_lag_500_hmc_stepsize_0.025_nsteps6 <- sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(hmc_meetings_lag_500_hmc_stepsize_0.025_nsteps6$x, L=500, t))
-tv_ub_values_lag_2000_hmc_stepsize_0.025_nsteps7 <- sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(hmc_meetings_lag_2000_hmc_stepsize_0.025_nsteps7$x, L=2000, t))
-tv_ub_values_PG_meetings_lag_350 <- sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(PG_meetings_lag_350$x, L=350, t))
 
+bound_df_list <- list()
+for (i in 1:nrow(hmc_experiments_df)) {
+  row <- hmc_experiments_df[i, ]
+  filename = sprintf("hmc_meetings_lag=%d_stepsize=%f_nsteps=%d.csv", row$lag, row$stepsize, row$nsteps)
+  meetings <- read.csv(file=filename, header=TRUE, sep=",")
+  tv_bounds <- colMeans(sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(meetings$x, L=row$lag, t)))
+  bound_df_list[[length(bound_df_list) + 1]] <- data.frame(t=t_start:t_end, bounds=tv_bounds, alg=sprintf("hmc_L=%d", row$nsteps))
+}
 
+# Polya-Gamma meeting times.
+pg_meetings_lag_350 <- read.csv(file="PG_meetings_lag=350.csv", header=TRUE, sep=",")
+tv_bounds <- colMeans(sapply(c(t_start:t_end), function(t) tv_upper_bound_estimates(pg_meetings_lag_350$x, L=350, t)))
+bound_df_list[[length(bound_df_list) + 1]] <- data.frame(t=t_start:t_end, bounds=tv_bounds, alg="pg")
 
+bound_df <- bind_rows(bound_df_list)
 
-######################## ggplot for bounds
-ub_HMC_stepsize_stepsize_0.025_nsteps4 <- data.frame(cbind(c(t_start:t_end), colMeans(tv_ub_values_lag_1000_hmc_stepsize_0.025_nsteps4)))
-colnames(ub_HMC_stepsize_stepsize_0.025_nsteps4) <- c('iterations', 'TV')
-ub_HMC_stepsize_stepsize_0.025_nsteps5 <- data.frame(cbind(c(t_start:t_end), colMeans(tv_ub_values_lag_1000_hmc_stepsize_0.025_nsteps5)))
-colnames(ub_HMC_stepsize_stepsize_0.025_nsteps5) <- c('iterations', 'TV')
-ub_HMC_stepsize_stepsize_0.025_nsteps6 <- data.frame(cbind(c(t_start:t_end), colMeans(tv_ub_values_lag_500_hmc_stepsize_0.025_nsteps6)))
-colnames(ub_HMC_stepsize_stepsize_0.025_nsteps6) <- c('iterations', 'TV')
-ub_HMC_stepsize_stepsize_0.025_nsteps7 <- data.frame(cbind(c(t_start:t_end), colMeans(tv_ub_values_lag_2000_hmc_stepsize_0.025_nsteps7)))
-colnames(ub_HMC_stepsize_stepsize_0.025_nsteps7) <- c('iterations', 'TV')
-ub_PG <- data.frame(cbind(c(t_start:t_end), colMeans(tv_ub_values_PG_meetings_lag_350)))
-colnames(ub_PG) <- c('iterations', 'TV')
-
-g_tv_ub_HMC_PG <- ggplot(data=ub_PG,aes(x = iterations,y=TV, linetype = 'Polya-Gamma'))+geom_line(aes(y=TV)) + 
-  geom_line(data=ub_HMC_stepsize_stepsize_0.025_nsteps4, aes(y=TV, linetype = 'L=4')) + 
-  geom_line(data=ub_HMC_stepsize_stepsize_0.025_nsteps5, aes(y=TV, linetype = 'L=5')) +
-  geom_line(data=ub_HMC_stepsize_stepsize_0.025_nsteps6, aes(y=TV, linetype = 'L=6')) +
-  geom_line(data=ub_HMC_stepsize_stepsize_0.025_nsteps7, aes(y=TV, linetype = 'L=7')) +
-  scale_x_continuous(expand = c(0, 0), limits = c(0,1800)) + ylim(0,1) +
+pg_vs_hmc_plot <- ggplot(data=bound_df, aes(x = t, y=bounds, linetype = alg)) +
+  geom_line() + 
+  scale_x_continuous(expand = c(0, 0), limits = c(0,1800)) + 
+  scale_linetype_manual(
+    values = c(c(2:10),1),
+    breaks=c("pg", "hmc_L=4", "hmc_L=5", "hmc_L=6", "hmc_L=7"),
+    labels=c(
+      "Polya-Gamma",
+      unname(TeX('$L_{HMC} = 0.1$')),
+      unname(TeX('$L_{HMC} = 0.125$')),
+      unname(TeX('$L_{HMC} = 0.15$')),
+      unname(TeX('$L_{HMC} = 0.175$'))
+    )) +
+  ylim(0,1) +
   theme_grey(base_size = 18) + 
-  theme(legend.position="bottom", legend.box = "horizontal") + labs(linetype="") + 
-  scale_linetype_manual(values = c(c(2:5),1),
-                        breaks=c("Polya-Gamma","L=4","L=5", "L=6","L=7"),
-                        labels=c("Polya-Gamma", unname(TeX('$L_{HMC} = 0.1$')), unname(TeX('$L_{HMC} = 0.125$')),unname(TeX('$L_{HMC} = 0.15$')),unname(TeX('$L_{HMC} = 0.175$')))) + 
+  theme(legend.position="bottom", legend.box = "horizontal") +
+  labs(linetype="") + 
   labs(y = TeX("d_{TV}"))
-g_tv_ub_HMC_PG 
 
-ggsave(filename = "pg_vs_hmc_small_p.pdf", plot = g_tv_ub_HMC_PG, width = 9, height = 4.5)
-
-# 
-
-
-
+ggsave(filename = "pg_vs_hmc_small_p.pdf", plot = pg_vs_hmc_plot, width = 9, height = 4.5)
