@@ -8,8 +8,8 @@ library(reshape2)
 library(tidyverse)
 
 #setwd("..")
-source("coupling.R")
-source("tv_wasserstein_bounds.R")
+source("/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/coupling.R")
+source("/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/tv_wasserstein_bounds.R")
 
 set.seed(1)
 registerDoParallel(cores = detectCores())
@@ -246,14 +246,7 @@ g_wasserstein <-
   theme(legend.position = "bottom", legend.box = "horizontal")
 
 
-# Vertical combined plot
-#tv_bound_pic_1 <-
-#  grid.arrange(mcmc_traceplot, g_tv, g_wasserstein, nrow = 3)
-
-#ggsave(filename = "bound_standard_normal_vertical.pdf", plot = tv_bound_pic_1, width = 8, height = 6)
-
-
-# Horizontal combined plot
+# Combined plot legend
 shared_legend <-
   cowplot::get_legend(g_wasserstein +
                         scale_linetype_manual(values = c(3:1),
@@ -263,6 +256,21 @@ shared_legend <-
                         theme_grey(base_size = 14) +
                         theme(legend.position = "bottom",
                               legend.box = "horizontal"))
+
+
+# Vertical combined plot
+tv_bound_pic_1 <- grid.arrange(mcmc_traceplot + theme(legend.position="none"),
+             g_tv + theme(legend.position="none"),
+             g_wasserstein + theme(legend.position="none"),
+             shared_legend,
+             nrow=4, ncol=1, 
+             layout_matrix = cbind(c(1,2,3,4)),
+             heights = c(0.31, 0.31, 0.31, 0.07))
+
+ggsave(filename = "/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/LlagCouplings_Poster/misc/bound_standard_normal_vertical.pdf", plot = tv_bound_pic_1, width = 4, height = 5)
+
+
+# Horizontal combined plot
 tv_bound_pic_2 <- grid.arrange(mcmc_traceplot + theme(legend.position="none"),
                                g_tv + theme(legend.position="none"),
                                g_wasserstein + theme(legend.position="none"),
