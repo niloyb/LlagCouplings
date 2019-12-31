@@ -1,3 +1,9 @@
+# This script reproduces Figure 1 in the article 
+# "Estimating Convergence of Markov chains with L-Lag Couplings", 
+# by Niloy Biswas, Pierre E. Jacob and Paul Vanetti. 
+# In Advances in Neural Information Processing Systems 32 (2019), 7389--7399.
+# https://papers.nips.cc/paper/8958-estimating-convergence-of-markov-chains-with-l-lag-couplings
+
 library(doParallel)
 library(doRNG)
 library(ggplot2)
@@ -7,22 +13,22 @@ library(latex2exp)
 library(reshape2)
 library(tidyverse)
 
-#setwd("..")
-source("/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/coupling.R")
-source("/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/tv_wasserstein_bounds.R")
+source("coupling.R")
+source("tv_wasserstein_bounds.R")
 
 set.seed(1)
 registerDoParallel(cores = detectCores())
 
-# Simple random walk MH targetting N(0,1) and starting with X_0 = initial_value. Proposals will be simulated from a N(x, sd_proposal).
-
+# Simple random walk MH targetting N(0,1) and starting with X_0 = initial_value. 
+# Proposals will be simulated from a N(x, sd_proposal).
 initial_value <- 10
 sd_proposal <- 0.5
 
 ################
 # Exact results.
 ################
-# For "exact" results, we will simulate many MCMC chains and approximate the densities using those samples.
+# For "exact" results, we will simulate many MCMC chains and 
+# approximate the densities using those samples.
 chain_length <- 160
 number_of_chains <- 50000
 
@@ -245,7 +251,6 @@ g_wasserstein <-
   theme_grey(base_size = 14) +
   theme(legend.position = "bottom", legend.box = "horizontal")
 
-
 # Combined plot legend
 shared_legend <-
   cowplot::get_legend(g_wasserstein +
@@ -257,7 +262,6 @@ shared_legend <-
                         theme(legend.position = "bottom",
                               legend.box = "horizontal"))
 
-
 # Vertical combined plot
 tv_bound_pic_1 <- grid.arrange(mcmc_traceplot + theme(legend.position="none"),
              g_tv + theme(legend.position="none"),
@@ -267,7 +271,7 @@ tv_bound_pic_1 <- grid.arrange(mcmc_traceplot + theme(legend.position="none"),
              layout_matrix = cbind(c(1,2,3,4)),
              heights = c(0.31, 0.31, 0.31, 0.07))
 
-ggsave(filename = "/Users/niloybiswas/Google Drive/Niloy_Files/github/LlagCouplings/LlagCouplings_Poster/misc/bound_standard_normal_vertical.pdf", plot = tv_bound_pic_1, width = 4, height = 5)
+ggsave(filename = "bound_standard_normal_vertical.pdf", plot = tv_bound_pic_1, width = 4, height = 5)
 
 
 # Horizontal combined plot

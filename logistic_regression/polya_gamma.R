@@ -20,8 +20,8 @@ b <- matrix(0, nrow = p, ncol = 1)
 B <- diag(10, p, p)
 logistic_setting <- logisticregression_precomputation(Y, X, b, B)
 
-# Functions
-
+## Functions for the Poly Gamma sampler
+# Initialization
 rinit <- function(){
   x <- t(fast_rmvnorm(1, mean = b, covariance = B))
   return(list(
@@ -29,7 +29,7 @@ rinit <- function(){
     current_pdf=0
   )) 
 }
-
+# Kernel for the single PG chain
 single_kernel <- function(chain_state, current_pdf, iteration) {
   zs <- abs(logisticregression_xbeta(logistic_setting$X, t(chain_state)))
   w <- BayesLogit::rpg(logistic_setting$n, h=1, z=zs)
@@ -40,7 +40,7 @@ single_kernel <- function(chain_state, current_pdf, iteration) {
     current_pdf=0
   ))
 }
-
+# Kernel for coupled PG chain
 coupled_kernel <- function(chain_state1, chain_state2, current_pdf1, current_pdf2, iteration) {
   ws <- sample_w(chain_state1, chain_state2, logistic_setting$X, mode='rej_samp')
   betas <- sample_beta(ws$w1, ws$w2, logistic_setting)
@@ -56,7 +56,6 @@ coupled_kernel <- function(chain_state1, chain_state2, current_pdf1, current_pdf
 }
 
 # Generating meeting times
-#nsamples <- 1000
 nsamples <- 100
 max_iterations <- 20000
 lag <- 350
