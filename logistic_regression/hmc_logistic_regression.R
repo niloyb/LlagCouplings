@@ -1,6 +1,6 @@
 library(unbiasedmcmc)
 library(doParallel)
-library(unbiasedmcmc)
+library(debiasedhmc)
 
 source("coupling.R")
 
@@ -23,6 +23,7 @@ dimension <- ncol(design_matrix)
 # Prior variance for regression coefficients.
 sigma2 <- 10
 
+# Log sigmoid function
 stable_log_sigmoid <- function(x){
   output <- vector(mode = "logical", length = length(x))
   mask <- x > 0
@@ -32,16 +33,18 @@ stable_log_sigmoid <- function(x){
   return(output)
 }
 
+# Sigmoid function
 sigmoid <- function(x) {
   1 / (1 + exp(-x))
 }
 
+# Log density of the posterior (up to a constant)
 logtarget <- function(beta){
   xbeta <- design_matrix %*% beta
   loglikelihood <- sum(stable_log_sigmoid(new_response*xbeta))
   return(loglikelihood - sum(beta^2)/(2*sigma2))
 }
-
+# Gradient of log density of the posterior
 gradlogtarget <- function(beta){
   xbeta <- design_matrix %*% beta
   tdesign_matrix %*% (sigmoid(-new_response * xbeta) * new_response) - beta / (2 * sigma2)
@@ -70,13 +73,17 @@ for (i in 1:nrow(hmc_experiments_df)) {
   filename = sprintf("hmc_meetings_lag=%d_stepsize=%f_nsteps=%d.csv", row$lag, row$stepsize, row$nsteps)
   print(filename)
   
+  # Obtain kernels for the single and coupled HMC chain
   hmc <- get_hmc_kernel(logtarget, gradlogtarget, row$stepsize, row$nsteps, dimension)
 
-  omega <- 1 / 20 # probability of selecting coupled RWMH
-  Sigma_std <- 1e-3
+  omega <- 1 / 20 # probability of selecting coupled RWMH 
+  
+  # Obtain kernels for the single and coupled RWMH chain
+  Sigma_std <- 1e-3 # propsal std for the coupled RWMH chain
   Sigma_proposal <- Sigma_std^2 * diag(1, dimension, dimension)
   mh <- get_mh_kernel(logtarget, Sigma_proposal, dimension)
   
+  # Mixture kernel for the single HMC and single RWMH chain
   mixture_kernel <- function(chain_state, current_pdf, iteration) {
     if (runif(1) < omega){
       return(mh$kernel(chain_state, current_pdf, iteration))
@@ -84,7 +91,7 @@ for (i in 1:nrow(hmc_experiments_df)) {
       return(hmc$kernel(chain_state, current_pdf, iteration))
     }
   }
-  
+  # Mixture kernel for the coupled HMC and coupled RWMH chain
   mixture_coupled_kernel <- function(chain_state1, chain_state2, current_pdf1, current_pdf2, iteration) {
     if (runif(1) < omega){
       return(mh$coupled_kernel(chain_state1, chain_state2, current_pdf1, current_pdf2, iteration))
@@ -93,6 +100,7 @@ for (i in 1:nrow(hmc_experiments_df)) {
     }
   }
   
+  # Generate meeting times
   meetings <- times(nsamples) %dopar% {
       res <- simulate_meeting_time(mixture_kernel, mixture_coupled_kernel, rinit, max_iterations = max_iterations, L = row$lag)
       res$meeting_time

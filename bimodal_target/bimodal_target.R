@@ -7,12 +7,15 @@ source("coupling.R")
 set.seed(1)
 registerDoParallel(cores = detectCores())
 
+# Log density of the bimodal target: 0.5*N(-4,1)+0.5*N(+4,1)
 logtarget <- function(x) {
   evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
   return(max(evals) + log(sum(exp(evals - max(evals)))))
 }
 
+# get_pb returns the kernels of a single RWMH and a coupled RWMH chain
 get_pb <- function(sd_proposal, initmean, initsd) {
+  # Initilization the RWMH chain
   rinit <- function() {
     chain_state <- rnorm(1, initmean, initsd)
     return(list(
@@ -78,6 +81,7 @@ pb <- get_pb(1, initmean = 10, initsd = 1)
 chain_length <- 500
 number_of_chains <- 1000
 
+# Single RWMH chain
 all_chains <- foreach(i = 1:number_of_chains, .combine = rbind) %dorng% {
     res <- pb$rinit()
     x <- res$chain_state
@@ -93,6 +97,7 @@ write.csv(all_chains, "bad_bimodal_500.csv")
 nsamples <- 10000
 max_iterations <- Inf
 
+# Meetings times are under the choice of a small (1) and large (18000) lag
 for (lag in c(1, 18000)) {
   meeting_times <- foreach(i = 1:nsamples, .combine = rbind) %dorng% {
     res <- simulate_meeting_time(pb$single_kernel, pb$coupled_kernel, pb$rinit, max_iterations = max_iterations, L = lag)

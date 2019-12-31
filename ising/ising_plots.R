@@ -1,3 +1,11 @@
+# This script reproduces Figure 3 in the article 
+# "Estimating Convergence of Markov chains with L-Lag Couplings", 
+# by Niloy Biswas, Pierre E. Jacob and Paul Vanetti. 
+# In Advances in Neural Information Processing Systems 32 (2019), 7389--7399.
+# https://papers.nips.cc/paper/8958-estimating-convergence-of-markov-chains-with-l-lag-couplings
+
+# The data for the plots are generated using the ising_run.R script
+
 library(latex2exp)
 library(ggplot2)
 
