@@ -1,3 +1,12 @@
+# This script reproduces Figure 5 in the article 
+# "Estimating Convergence of Markov chains with L-Lag Couplings", 
+# by Niloy Biswas, Pierre E. Jacob and Paul Vanetti. 
+# In Advances in Neural Information Processing Systems 32 (2019), 7389--7399.
+# https://papers.nips.cc/paper/8958-estimating-convergence-of-markov-chains-with-l-lag-couplings
+
+# The data for the plots are generated using the 
+# polya_gamma.R and hmc_logistic_regression.R scripts
+
 library(dplyr)
 library(cowplot)
 library(ggplot2)
