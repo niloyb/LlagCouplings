@@ -3,6 +3,7 @@ library(doRNG)
 
 source("coupling.R")
 source("ising/ising_functions.R")
+Rcpp::sourceCpp("ising/ising.cpp")
 
 set.seed(1)
 registerDoParallel(cores = detectCores())
