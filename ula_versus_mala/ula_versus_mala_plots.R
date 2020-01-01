@@ -4,8 +4,7 @@
 # In Advances in Neural Information Processing Systems 32 (2019), 7389--7399.
 # https://papers.nips.cc/paper/8958-estimating-convergence-of-markov-chains-with-l-lag-couplings
 
-# The data for the plots are generated using the 
-# polya_gamma.R and hmc_logistic_regression.R scripts
+# The data for the plots are generated using the ula_versus_mala.R script
 
 library(dplyr)
 library(cowplot)
