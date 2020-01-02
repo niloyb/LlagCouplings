@@ -5,3 +5,4 @@
 ## polya_gamma.R contains all the functions and generates meeting times
 ## for the Polya-Gamma sampler. 
 ## logistic_regression_plots.R plots the figures from the paper.
+
