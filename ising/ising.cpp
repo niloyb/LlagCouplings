@@ -13,29 +13,10 @@ IntegerVector rcouplbern2(double p1, double p2){
   RNGScope scope;
   IntegerVector x(2);
   NumericVector u(1);
-  double p10 = 1-p1;
-  double p20 = 1-p2;
-  double minoriz0, minoriz1;
-  double alpha;
-  if (p10 < p20){
-    minoriz0 = p10;
-    minoriz1 = p2;
-  } else {
-    minoriz0 = p20;
-    minoriz1 = p1;
-  }
-  alpha = minoriz0 + minoriz1;
+  // maximally couple using a common random number 
   u = runif(1);
-  if (u(0) < alpha){
-    u = runif(1);
-    x(0) = (u(0) < minoriz1/alpha);
-    x(1) = x(0);
-  } else {
-    u = runif(1);
-    x(0) = (u(0) < (p1-minoriz1)/(1.-alpha));
-    u = runif(1);
-    x(1) = (u(0) < (p2-minoriz1)/(1.-alpha));
-  }
+  x(0) = (u(0) < p1);
+  x(1) = (u(0) < p2);
   return((2*x - 1));
 }
 
@@ -121,29 +102,9 @@ List ising_coupled_gibbs_sweep_(IntegerMatrix state1, IntegerMatrix state2, Nume
       s1 += state1(itop, j) + state1(ibottom, j) + state1(i, jright) + state1(i, jleft);
       s2 += state2(itop, j) + state2(ibottom, j) + state2(i, jright) + state2(i, jleft);
       p1 = proba_beta((s1+4)/2);
-      p10 = 1-p1;
       p2 = proba_beta((s2+4)/2);
-      p20 = 1-p2;
-      //
-      if (p10 < p20){
-        minoriz0 = p10;
-        minoriz1 = p2;
-      } else {
-        minoriz0 = p20;
-        minoriz1 = p1;
-      }
-      alpha = minoriz0 + minoriz1;
-      u = runif(1);
-      if (u(0) < alpha){
-        u = runif(1);
-        x(0) = (u(0) < minoriz1/alpha);
-        x(1) = x(0);
-      } else {
-        u = runif(1);
-        x(0) = (u(0) < (p1-minoriz1)/(1.-alpha));
-        u = runif(1);
-        x(1) = (u(0) < (p2-minoriz1)/(1.-alpha));
-      }
+      // maximally couple Bernoulli(p1) and Bernoulli(p2)
+      x = rcouplbern2(p1,p2);
       state1(i,j) = 2*x(0) - 1;
       state2(i,j) = 2*x(1) - 1;
     }

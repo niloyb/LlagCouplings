@@ -7,7 +7,7 @@ output: flexdashboard::flex_dashboard
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-In this tutorial we reproduce a stylized example from the paper [Estimating Convergence of Markov chains with L-Lag Couplings](https://arxiv.org/abs/1905.09971) by Niloy Biswas, Pierre E. Jacob and  Paul Vanetti. Individual scripts 
+In this tutorial we reproduce a stylized example from the paper [Estimating Convergence of Markov chains with L-Lag Couplings](https://papers.nips.cc/paper/8958-estimating-convergence-of-markov-chains-with-l-lag-couplings) by Niloy Biswas, Pierre E. Jacob and  Paul Vanetti. Individual scripts 
 reproducing all examples in the paper can be found [here](https://github.com/niloyb/LlagCouplings).
 
 #### 0.1 Libraries
