@@ -6,16 +6,16 @@
 
 # The data for the plots are generated using the ula_versus_mala.R script
 
-library(dplyr)
-library(cowplot)
+#library(cowplot)
+#library(dplyr)
+#library(ggthemes)
+#library(ggridges)
+#library(grid)
+#library(gridExtra)
+#library(tidyverse)
+#library(reshape2)
 library(ggplot2)
-library(ggthemes)
-library(ggridges)
-library(grid)
-library(gridExtra)
 library(latex2exp)
-library(reshape2)
-library(tidyverse)
 
 source("tv_wasserstein_bounds.R")
 
