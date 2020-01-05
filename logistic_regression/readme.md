@@ -6,5 +6,5 @@ These scripts reproduce the reproduce the Logistic Regression example. That is, 
 * `hmc_logistic_regression.R` contains all the functions and generates meeting times for HMC. It requires the packages `doParallel`,
 `unbiasedmcmc` and `debiasedhmc`, and the source file `coupling.R`.
 * `polya_gamma.R` contains all the functions and generates meeting times for the Polya-Gamma sampler. It requires the packages `doParallel`, `unbiasedmcmc` and `BayesLogit`, and the source file `coupling.R`.
-* `logistic_regression_plots.R` plots the figures from the paper. It requires the packages `latex2exp` and `tidyverse`, and the source file `tv_wasserstein_bounds.R`.
+* `logistic_regression_plots.R` plots the figures from the paper. It requires the packages `latex2exp` and `ggplot2`, and the source file `tv_wasserstein_bounds.R`.
 

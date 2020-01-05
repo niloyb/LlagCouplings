@@ -8,7 +8,8 @@
 # polya_gamma.R and hmc_logistic_regression.R scripts
 
 library(latex2exp)
-library(tidyverse)
+library(ggplot2)
+#library(tidyverse)
 
 source("tv_wasserstein_bounds.R")
 
