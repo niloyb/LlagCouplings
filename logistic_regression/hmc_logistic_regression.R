@@ -1,5 +1,5 @@
-library(unbiasedmcmc)
 library(doParallel)
+library(unbiasedmcmc)
 library(debiasedhmc)
 
 source("coupling.R")

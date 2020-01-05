@@ -1,6 +1,6 @@
-library(BayesLogit)
 library(doParallel)
 library(unbiasedmcmc)
+library(BayesLogit)
 
 source("coupling.R")
 
