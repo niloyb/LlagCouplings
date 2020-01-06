@@ -90,7 +90,6 @@ for (t in 1:chain_length) {
     mean(abs(std_norm_samples - marginal_samples))
 }
 
-
 #####################
 # Coupling algorithm.
 #####################
