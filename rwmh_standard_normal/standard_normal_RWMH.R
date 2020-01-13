@@ -6,12 +6,13 @@
 
 library(doParallel)
 library(doRNG)
+library(dplyr)
 library(ggplot2)
 library(ggridges)
 library(gridExtra)
 library(latex2exp)
 library(reshape2)
-library(tidyverse)
+#library(tidyverse)
 
 source("coupling.R")
 source("tv_wasserstein_bounds.R")
