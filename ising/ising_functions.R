@@ -1,10 +1,31 @@
-library(unbiasedmcmc)
+# Functions for the Ising model SSG and PT chains
+Rcpp::sourceCpp("ising/ising.cpp")
 
+# get_ising_ssg_kernel returns the kernels of a single SSG and a coupled SSG chain
 get_ising_ssg_kernel <- function(size, beta) {
   # precomputed probability for single-site flips, given sum of neighbors
   ss <- c(-4, -2, 0, 2, 4)
   probas <- exp(ss * beta) / (exp(ss * beta) + exp(-ss * beta))
-
+  
+  # initialization of Gibbs chain for Ising model
+  ising_rinit <- function(size = 32){
+    initial_values <- 2 * rbinom(size*size, 1, 0.5) - 1
+    state <- matrix(initial_values, nrow = size, ncol = size)
+    return(state)
+  }
+  
+  # one step of Gibbs sampler, i.e. one full sweep over all components
+  ising_single_kernel <- function(chain_state, probas){
+    chain_state <- ising_gibbs_sweep_(chain_state, probas)
+    return(chain_state)
+  }
+  
+  # one step of coupled Gibbs sampler, i.e. one full sweep over all components
+  ising_coupled_kernel <- function(chain_state1, chain_state2, probas){
+    res_ <- ising_coupled_gibbs_sweep_(chain_state1, chain_state2, probas)
+    return(list(chain_state1 = res_$state1, chain_state2 = res_$state2))
+  }
+  
   return(list(
     init = function() {
       res <- ising_rinit(size)
