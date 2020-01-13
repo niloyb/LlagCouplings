@@ -1,6 +1,6 @@
 library(doParallel)
 library(doRNG)
-library(unbiasedmcmc)
+#library(unbiasedmcmc)
 
 source("coupling.R")
 
@@ -11,6 +11,35 @@ registerDoParallel(cores = detectCores())
 logtarget <- function(x) {
   evals <- log(0.5) + dnorm(x, mean = c(-4, 4), sd = 1, log = TRUE)
   return(max(evals) + log(sum(exp(evals - max(evals)))))
+}
+
+# Sample from a maximal coupling of two distributions p and q
+# Distributions p and q are specified by random number generators and log-pdfs
+get_max_coupling <- function(rp, dp, rq, dq){
+  function(){
+    x <- rp(1)
+    if (dp(x) + log(runif(1)) < dq(x)){
+      return(list(xy = c(x,x), identical = TRUE))
+    } else {
+      reject <- TRUE
+      y <- NA
+      while (reject){
+        y <- rq(1)
+        reject <- (dq(y) + log(runif(1)) < dp(y))
+      }
+      return(list(xy = c(x,y), identical = FALSE))
+    }
+  }
+}
+
+# Samples from maximal coupling of two univariate Normal distributions
+# Normal distributions are specified through their means and standard deviations
+rnorm_max_coupling <- function(mu1, mu2, sigma1, sigma2){
+  f <- get_max_coupling(function(n) rnorm(n, mu1, sigma1),
+                        function(x) dnorm(x, mu1, sigma1, log = TRUE),
+                        function(n) rnorm(n, mu2, sigma2),
+                        function(x) dnorm(x, mu2, sigma2, log = TRUE))
+  return(f())
 }
 
 # get_pb returns the kernels of a single RWMH and a coupled RWMH chain

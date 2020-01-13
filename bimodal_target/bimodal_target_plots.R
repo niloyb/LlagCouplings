@@ -4,11 +4,11 @@
 
 # The data for the plots are generated using the bimodal_target.R script
 
-library(cowplot)
 library(dplyr)
 library(ggplot2)
 library(latex2exp)
 library(purrr)
+library(cowplot)
 
 source("tv_wasserstein_bounds.R")
 
