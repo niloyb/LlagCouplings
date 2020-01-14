@@ -1,9 +1,12 @@
 library(doParallel)
 library(doRNG)
-library(unbiasedmcmc)
+#library(unbiasedmcmc)
 
 
 source("coupling.R")
+source("ula_versus_mala/helper_functions/mvnorm.R")
+source("ula_versus_mala/helper_functions/mvnorm_couplings.R")
+Rcpp::sourceCpp("ula_versus_mala/helper_functions/mvnorm.cpp")
 
 set.seed(1)
 registerDoParallel(cores = detectCores())
