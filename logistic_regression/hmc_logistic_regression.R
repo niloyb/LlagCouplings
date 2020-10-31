@@ -47,7 +47,7 @@ logtarget <- function(beta){
 # Gradient of log density of the posterior
 gradlogtarget <- function(beta){
   xbeta <- design_matrix %*% beta
-  tdesign_matrix %*% (sigmoid(-new_response * xbeta) * new_response) - beta / (2 * sigma2)
+  tdesign_matrix %*% (sigmoid(-new_response * xbeta) * new_response) - beta / (sigma2)
 }
 
 # Distribution of X_0.
