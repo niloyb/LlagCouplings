@@ -9,7 +9,7 @@
 
 library(latex2exp)
 library(ggplot2)
-#library(tidyverse)
+library(dplyr)
 
 source("tv_wasserstein_bounds.R")
 
