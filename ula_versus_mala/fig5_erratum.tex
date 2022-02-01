@@ -1,0 +1,123 @@
+\documentclass{article}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+%\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{natbib}
+
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{esint}
+\usepackage{listings}
+\lstset{language=R,
+    basicstyle=\small\ttfamily,
+    stringstyle=\color{DarkGreen},
+    otherkeywords={0,1,2,3,4,5,6,7,8,9},
+    morekeywords={TRUE,FALSE},
+    deletekeywords={data,frame,length,as,character},
+    keywordstyle=\color{black},
+    commentstyle=\color{DarkGreen},
+}
+
+\usepackage[unicode=true,bookmarks=true,bookmarksnumbered=false,bookmarksopen=false,breaklinks=false,pdfborder={0 0 0},pdfborderstyle={},backref=page,colorlinks=true]{hyperref}
+\hypersetup{pdftitle={Estimating Convergence},pdfauthor={Biswas Jacob},linkcolor=RoyalBlue,citecolor=RoyalBlue}
+\usepackage[dvipsnames,svgnames,x11names,hyperref]{xcolor}
+
+
+% Added Thm, Lemmas, etc.
+\newtheorem{Th}{Theorem}[section]
+\newtheorem{Lemma}[Th]{Lemma}
+\newtheorem{Cor}[Th]{Corollary}
+\newtheorem{Prop}[Th]{Proposition}
+\newtheorem{Asm}[Th]{Assumption}
+\newtheorem{Remark}[Th]{Remark}
+\newtheorem{Def}[Th]{Definition}
+
+\usepackage[ruled]{algorithm2e}
+\usepackage{graphicx}
+\usepackage{graphics}
+
+
+\title{Erratum for Figure 5 of \citeauthor{biswas_2019}}
+
+\author{Niloy Biswas \& Pierre E. Jacob}
+
+\begin{document}
+\maketitle
+
+There was a bug in the code used to produce Figure 5 of \citet{biswas_2019}. 
+The choice of step-size for the MALA and ULA chains was not set in the code as it was described in 
+the paper. The corresponding script 
+\href{https://github.com/niloyb/LlagCouplings/blob/master/ula_versus_mala/ula_versus_mala.R}{ula\_versus\_mala/ula\_versus\_mala.R} 
+has now been corrected.  Below we provide details and an updated  Figure 5.  
+
+\section{Choice of step-size in previous code}
+\begin{itemize}
+  \item Langevin Monte Carlo methods are based on a proposal of the form 
+    \begin{equation} \label{eq:prop1}
+        Y = X + \frac{1}{2}  h^2  \nabla \log \pi (X) + h Z, 
+    \end{equation}
+    or equivalently 
+    \begin{equation} \label{eq:prop2}
+        Y = X + \frac{1}{2}  \epsilon  \nabla \log \pi (X) + \sqrt{\epsilon} Z, 
+    \end{equation}
+    with $\epsilon = h^2$. In other words, the term in front of the gradient
+    should be commensurate to the variance of the noise term.  Our previous code for Figure 5
+    implemented this proposal correctly following the parameterization in \eqref{eq:prop2}. 
+    In our previous code, \texttt{ula\_stepsize} and \texttt{mala\_stepsize} corresponded to $\epsilon = h^2$ above.
+    \item For this example, the optimal scaling for MALA corresponds to $h \sim d^{-1/6}$ or $h^2 \sim d^{-1/3}$.
+    However we got it wrong in the implementation: we chose $\epsilon = h^2 \sim d^{-1/6}$, leading to a decaying acceptance rate for MALA as dimension grew, i.e. a sub-optimal tuning of MALA.
+\end{itemize}
+
+\section{Updated code and experiments}
+We have updated the script
+\href{https://github.com/niloyb/LlagCouplings/blob/master/ula_versus_mala/ula_versus_mala.R}{ula\_versus\_mala/ula\_versus\_mala.R}. 
+In the updated script,  \texttt{ula\_stepsize} and \texttt{mala\_stepsize} correspond to $h$ in \eqref{eq:prop1}, 
+and we choose $h \sim d^{-1/6}$. 
+
+\subsection{Choice of step-size}
+We experiment with step-sizes of the form $h=C d^{-1/6}$ for various $C$ and $d$.
+We obtain Figure \ref{fig:acceptancerate}, confirming that the MALA acceptance
+rate is stable with $d$.
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[scale=0.6]{mala_acceptrate2.pdf}
+\caption{Acceptance rate of MALA for various $C$ and $d$,
+  with \texttt{mala\_stepsize} $h=Cd^{-1/6}$. \label{fig:acceptancerate}}
+\end{center}
+\end{figure}
+
+\subsection{Upper bounds on mixing times}
+
+With the corrected step-sizes, we can again estimate upper bounds on
+$t_{\text{mix}}(\delta)$, say with $\delta = 0.25$.  We obtain Figure
+\ref{fig:mixing}, based on $50$ independent meetings for each configuration
+(dimension, step-size, algorithm). The upper bounds associated with ULA tend to be smaller.
+However they provide information on the convergence of ULA to its limiting
+distribution, which is not $\pi$. And, they are simply upper bounds, so the
+actual mixing times could be ordered differently.
+
+\begin{figure}[!ht]
+\begin{center}
+\includegraphics[scale=0.6]{ula_mala_mixing2.pdf}
+\caption{ Upper bounds on the mixing time, for various dimensions
+  and various step-sizes of the form $C d^{-1/6}$,
+  for ULA and for MALA. \label{fig:mixing}}
+\end{center}
+\end{figure}
+
+
+\bibliographystyle{abbrvnat}
+\bibliography{LlagCouplings_biblo.bib}
+
+\end{document}
